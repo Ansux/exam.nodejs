@@ -1,0 +1,14 @@
+extends ../../layout/admin
+
+block content
+  .panel.panel-default
+    .panel-heading 添加题型
+    .panel-body
+      form.form-horizontal(method="post",action="/admin/testType/create")
+        .form-group
+          label.control-label.col-sm-2 题型
+          .col-sm-10
+            input.form-control(name="type[name]")
+        .form-group
+          .col-sm-offset-2.col-sm-10
+            button.btn.btn-primary(type="submit") 提交

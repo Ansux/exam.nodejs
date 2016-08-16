@@ -1,0 +1,16 @@
+extends ../../layout/admin
+
+block content
+  table.table
+    thead
+      tr
+        th 科目
+        th 操作
+    tbody
+      each type in types
+        tr
+          td= type.name
+          td
+            a(href="") 编辑
+            |  / 
+            a(href="") 删除

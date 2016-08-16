@@ -1,0 +1,14 @@
+extends ../../layout/admin
+
+block content
+  .panel.panel-default
+    .panel-heading 添加科目
+    .panel-body
+      form.form-horizontal(method="post",action="/admin/subject/create")
+        .form-group
+          label.control-label.col-sm-2 科目
+          .col-sm-10
+            input.form-control(name="subject[name]")
+        .form-group
+          .col-sm-offset-2.col-sm-10
+            button.btn.btn-primary(type="submit") 提交

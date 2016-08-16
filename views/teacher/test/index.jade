@@ -1,0 +1,23 @@
+extends ../../layout/teacher
+
+block content
+  #testCtrl
+    .panel.panel-default
+      .panel-heading 题目列表
+      .panel-body
+        table.table
+          thead
+            tr
+              th 科目
+              th 操作
+          tbody
+            tr(v-for="test in tests")
+              td
+              td
+                a(href="") 编辑
+                |  / 
+                a(href="") 删除
+block scripts
+  script(src='/vue/dist/vue.min.js')
+  script(src='/vue-resource/dist/vue-resource.min.js')
+  script(src='/javascripts/v_teacher.js')

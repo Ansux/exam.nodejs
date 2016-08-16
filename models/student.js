@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var bcrypt = require('bcrypt-nodejs');
 
 var StudentSchema = new mongoose.Schema({
   email: {
@@ -13,15 +14,14 @@ var StudentSchema = new mongoose.Schema({
     type: Number,
     unique: true
   },
-  sname: {
-    type: String,
-    required: true
-  },
+  sname: String,
   sex: String,
   classId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Classes'
   },
+  isEnable: Boolean,
+  isVerify: Boolean,
   meta: {
     createAt: Date,
     updateAt: Date
@@ -31,11 +31,22 @@ var StudentSchema = new mongoose.Schema({
 StudentSchema.pre('save', function(next) {
   if (this.isNew) {
     this.meta.createAt = Date.now();
+    this.isEnable = true;
+    this.isVerify = false;
+    this.pwd = bcrypt.hashSync(this.pwd);
   } else {
     this.meta.updateAt = Date.now();
   }
   next();
 });
+
+StudentSchema.methods = {
+  validPwd: function(pwd, cb) {
+    bcrypt.compare(pwd, this.pwd, function(err, res) {
+      cb(res);
+    });
+  }
+};
 
 StudentSchema.statics = {
   list: function(cb) {
