@@ -19,7 +19,7 @@ var TestSchema = new mongoose.Schema({
     ref: 'Teacher'
   },
   options: [], // {key:A, val: are you ok?}
-  result: String,
+  result: [],
   analyze: String,
   meta: {
     createAt: Date,
@@ -40,13 +40,13 @@ TestSchema.statics = {
   list: function(cb) {
     return this
       .find({})
-      .sort('meta.createAt')
+      .sort({ 'meta.createAt': -1 })
       .exec(cb);
   },
   search: function(query, cb) {
     return this
       .find(query)
-      .sort('meta.createAt')
+      .sort({ 'meta.createAt': -1 })
       .exec(cb);
   },
   findById: function(id, cb) {

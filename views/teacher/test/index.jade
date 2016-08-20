@@ -1,22 +1,74 @@
 extends ../../layout/teacher
 
 block content
-  #testCtrl
+  #testCtrl.testCtrl
+    .panel.panel-default
+      .panel-heading.clearfix
+        .pull-left.input-groups
+          .input-group
+            span.input-group-btn
+              button.btn.btn-default 科目
+            select.form-control(v-model="testAttrs.subject")
+              option(v-for="item in subjects",v-bind:value="item._id",v-text="item.name")
+          .input-group
+            span.input-group-btn
+              button.btn.btn-default 题型
+            select.form-control(v-model="testAttrs.type")
+              option(v-for="item in types",v-bind:value="item._id",v-text="item.name")
+        .pull-right
+          button.btn.btn-default(@click="create()") 添加题目
+    .modal.fade#newTestModal
+      .modal-dialog
+        .modal-content
+          .modal-header
+            button.close(data-dismiss="modal",aria-label="Close")
+              span(aria-hidden="true") &times;
+            h4.modal-title(v-text="modal.title")
+          form.form-horizontal
+            .modal-body
+                .form-group
+                  label.col-sm-2.label-control 题目
+                  .col-sm-10
+                    input.form-control(v-model="modal.form.title")
+                .options.divider
+                  .form-group(v-for="item in modal.form.options")
+                    label.col-sm-2.label-control(v-text="item.key")
+                    .col-sm-10
+                      input.form-control(v-model="item.val")
+                .result.divider
+                  .form-group
+                    label.col-sm-2.label-control 答案
+                    .col-sm-10
+                      label.radio-inline(v-for="item in modal.form.options")
+                        input(type="{{modal.form.type|inputType}}",name="result",v-bind:value="item.key",v-model="modal.form.result")
+                        | {{item.key}}
+                .analyze.divider
+                  .form-group
+                    label.col-sm-2.label-control 解析
+                    .col-sm-10
+                      input.form-control(v-model="modal.form.analyze")
+            .modal-footer
+              button.btn.btn-default(data-dismiss="modal") 关闭
+              button.btn.btn-primary(type="button",v-bind:disabled="formValid()",@click="submit()") 提交
     .panel.panel-default
       .panel-heading 题目列表
       .panel-body
-        table.table
-          thead
-            tr
-              th 科目
-              th 操作
-          tbody
-            tr(v-for="test in tests")
-              td
-              td
-                a(href="") 编辑
-                |  / 
-                a(href="") 删除
+        .t-header.row
+          .col-sm-10 题目
+          .col-sm-2 操作
+        .t-body
+          .t-item(v-for="test in tests")
+            .t-title.row
+              .col-sm-10 {{$index+1}}. {{test.title}}
+              .col-sm-2
+                a(@click="edit(test)") 编辑
+            .t-options
+              .t-option.row(v-for="option in test.options")
+                .col-sm-2(v-text="option.key")
+                .col-sm-10(v-text="option.val")
+            .t-result.row
+              .col-sm-2 答案：
+              .col-sm-10(v-text="test.result")
 block scripts
   script(src='/vue/dist/vue.min.js')
   script(src='/vue-resource/dist/vue-resource.min.js')

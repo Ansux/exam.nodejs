@@ -4,7 +4,7 @@ html
     meta(name='viewport',content='width=device-width,initial-scale=1')
     title= title
     link(rel='stylesheet',href='/bootstrap/dist/css/bootstrap.min.css')
-    link(rel='stylesheet',href='/css/student.css')
+    link(rel='stylesheet',href='/stylesheets/style.css')
   body
     nav.navbar.navbar-default
       .container
@@ -24,7 +24,7 @@ html
             li
               a(href="/teacher/paper") 试卷
           ul.nav.navbar-nav.navbar-right
-            - if(!student) {
+            - if(!teacher) {
               li
                 a(href="/teacher/account/signin") 登录
               li
@@ -32,7 +32,7 @@ html
             - } else {
               li.dropdown
                 a.dropdown-toggle(data-toggle='dropdown',aria-haspopup='true',aria-expanded='false')
-                  | #{student.email} 
+                  | #{teacher.email} 
                   span.caret
                 ul.dropdown-menu
                   li

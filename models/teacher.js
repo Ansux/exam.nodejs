@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var bcrypt = require('bcrypt-nodejs');
 
 TeacherSchema = new mongoose.Schema({
   email: {
@@ -20,11 +21,20 @@ TeacherSchema = new mongoose.Schema({
 TeacherSchema.pre('save', function(next) {
   if (this.isNew) {
     this.meta.createAt = Date.now();
+    this.pwd = bcrypt.hashSync(this.pwd);
   } else {
     this.meta.updateAt = Date.now();
   }
   next();
 });
+
+TeacherSchema.methods = {
+  validPwd: function(pwd, cb) {
+    bcrypt.compare(pwd, this.pwd, function(err, res) {
+      cb(res);
+    });
+  }
+};
 
 TeacherSchema.statics = {
   list: function(cb) {

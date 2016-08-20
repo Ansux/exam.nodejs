@@ -1,8 +1,20 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+/*题库中心*/
+
+.testCtrl .input-groups .input-group {
+  width: 180px;
+  float: left;
+  margin-right: 20px;
 }
 
-a {
-  color: #00B7FF;
+.testCtrl .result .radio-inline {
+  margin-right: 20px;
+}
+
+.testCtrl .divider {
+  border-top: solid 1px #ccc;
+  padding-top: 15px;
+}
+
+.testCtrl .t-item {
+  margin-bottom: 20px;
 }
