@@ -6,6 +6,7 @@ var Test = require('../models/test');
 var Subject = require('../models/subject');
 var TestType = require('../models/testType');
 var Teacher = require('../models/teacher');
+var Paper = require('../models/paper');
 
 /* GET users listing. */
 router.get('*', function(req, res, next) {
@@ -87,7 +88,6 @@ router.get('/getTestTypeList', function(req, res) {
 });
 router.post('/testSubmit', function(req, res) {
   var formTest = req.body.testForm;
-  formTest.author = req.session.teacher._id;
   console.log(formTest);
 
   var id = formTest._id;
@@ -99,13 +99,14 @@ router.post('/testSubmit', function(req, res) {
         resolve(true);
       });
     } else {
+      formTest.author = req.session.teacher._id;
       _test = new Test(formTest);
       resolve(true);
     }
   });
 
-  promise.then(function(val){
-    _test.save(function (err, test) {
+  promise.then(function(val) {
+    _test.save(function(err, test) {
       if (err) {
         console.log(err);
         return;
@@ -116,9 +117,105 @@ router.post('/testSubmit', function(req, res) {
 });
 
 // 试卷管理
-router.get('/paper',function(req,res){
-  res.render('./teacher/paper/list',{
+router.get('/paper', function(req, res) {
+  res.render('./teacher/paper/index', {
     title: '试卷管理'
   });
 });
+router.get('/getPaperList', function(req, res) {
+  Paper.list(function(err, papers) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    res.json(papers);
+  });
+});
+router.post('/paperSubmit', function(req, res) {
+  var formPaper = req.body.formPaper;
+
+  var id = formPaper._id;
+  var _paper;
+  var promise = new Promise(function(resolve, reject) {
+    if (id) {
+      Paper.findById(id, function(err, paper) {
+        formPaper.lastEditor = req.session.teacher._id;
+        _paper = _.extend(paper, formPaper);
+        resolve(true);
+      });
+    } else {
+      formPaper.creator = req.session.teacher._id;
+      _paper = new Paper(formPaper);
+      resolve(true);
+    }
+  });
+
+  promise.then(function(val) {
+    _paper.save(function(err, paper) {
+      if (err) {
+        console.log(err);
+        return;
+      }
+      res.json(paper);
+    });
+  });
+});
+
+// 组卷
+router.get('/paper/compose/:id', function(req, res) {
+  var id = req.params.id;
+  res.render('./teacher/paper/compose', {
+    title: '组卷',
+    id: id
+  });
+});
+router.get('/paper/getPaperInfo', function(req, res) {
+  var id = req.query.id;
+  Paper.findById(id, function(err, paper) {
+    res.json(paper);
+  });
+});
+router.post('/paper/composeSave', function(req, res) {
+  var form = req.body.form;
+  var id = req.body.id;
+
+  Paper.update({ _id: id }, {
+    $addToSet: {
+      composes: form
+    }
+  }, function(err) {
+    res.json(true);
+  });
+});
+router.post('/paper/deleteCompose', function(req, res) {
+  var pid = req.body.pid;
+  var datetime = req.body.datetime;
+  Paper.update({ _id: pid }, {
+    $pull: {
+      composes: {
+        datetime: datetime
+      }
+    }
+  }, function(err) {
+    res.json(true);
+  });
+});
+router.post('/paper/completeCompose', function(req, res) {
+  var id = req.body.id;
+  Paper.update({ _id: id }, {
+    $set: {
+      status: 2
+    }
+  }, function(err) {
+    res.json(true);
+  });
+});
+
+// 选题
+router.get('/paper/topic/:id', function(req, res) {
+  res.render('./teacher/paper/topic', {
+    title: '选题'
+  });
+});
+
 module.exports = router;

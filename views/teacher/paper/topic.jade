@@ -1,0 +1,65 @@
+extends ../../layout/teacher
+
+block content
+  #paperCtrl.paperCtrl
+    .panel.panel-default
+      .panel-heading.clearfix
+        .pull-left
+          | 共（{{papers.length}}）张卷子
+        .pull-right
+          button.btn.btn-default(@click="create()") 添加试卷
+    .modal.fade#newPaperModal(data-backdrop="false")
+      .modal-dialog
+        .modal-content
+          .modal-header
+            button.close(data-dismiss="modal",aria-label="Close")
+              span(aria-hidden="true") &times;
+            h4.modal-title(v-text="modal.title")
+          .modal-body
+            form.form-horizontal
+              .form-group
+                label.col-sm-2.label-control 名称
+                .col-sm-10
+                  input.form-control(v-model="modal.form.name")
+              .form-group
+                label.col-sm-2.label-control 时长
+                .col-sm-10
+                  input.form-control(type="number",v-model="modal.form.duration")
+              .form-group
+                label.col-sm-2.label-control 总分
+                .col-sm-10
+                  input.form-control(type="number",v-model="modal.form.points")
+              .form-group
+                label.col-sm-2.label-control 科目
+                .col-sm-10
+                  select.form-control(v-model="modal.form.subject")
+                    option(v-for="item in subjects",:value="item._id",v-text="item.name")
+          .modal-footer
+            button.btn.btn-default(data-dismiss="modal") 关闭
+            button.btn.btn-primary(type="submit",:disabled="formValid()",@click="submit()") 提交
+    .panel.panel-default
+      .panel-heading 试卷列表
+      .panel-body
+        .t-header.clearfix
+          .col-sm-8 试卷
+          .col-sm-2 状态
+          .col-sm-2 操作
+        .t-body
+          .t-item.clearfix(v-for="item in papers")
+            .col-sm-8
+              .name(v-text="item.name")
+              .info
+                .row-line
+                  span.subject 科目：{{item.subject.name}}
+                .row-line
+                  span.duration 时长：{{item.duration}}
+                  span.points 总分：{{item.points}}
+            .col-sm-2(v-text="item.status|paperStatus")
+            .col-sm-2.control
+              a(@click="edit(item)",v-if="item.status===1") 更新
+              a(href="/teacher/paper/compose/{{item._id}}",v-if="item.status===1") 组卷
+              a(href="/teacher/paper/topic/{{item._id}}",v-if="item.status===2") 去选题
+block scripts
+  script(src='/vue/dist/vue.min.js')
+  script(src='/vue-resource/dist/vue-resource.min.js')
+  script(src='/javascripts/v_teacher.js')

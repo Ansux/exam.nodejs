@@ -17,7 +17,7 @@ block content
               option(v-for="item in types",v-bind:value="item._id",v-text="item.name")
         .pull-right
           button.btn.btn-default(@click="create()") 添加题目
-    .modal.fade#newTestModal
+    .modal.fade#newTestModal(data-backdrop="false")
       .modal-dialog
         .modal-content
           .modal-header

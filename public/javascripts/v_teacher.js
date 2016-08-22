@@ -111,8 +111,8 @@ var vm = new Vue({
     },
     formValid: function() {
       var flag = false;
-      if (this.modal.form.title === '') flag = true;
-      if (this.modal.form.result === '') flag = true;
+      if (this.modal.form.title === '' || this.modal.form.title === undefined) flag = true;
+      if (this.modal.form.result === '' || this.modal.form.result === undefined) flag = true;
       return flag;
     },
     submit: function() {
@@ -158,10 +158,209 @@ var vm = new Vue({
   }
 });
 
+new Vue({
+  el: '#paperCtrl',
+  ready: function() {
+    // 获取科目列表
+    this.$http.get('/teacher/getSubjectList', {}, {}).then(function(res) {
+      this.subjects = res.data;
+      this.modal.form.subject = this.subjects[0]._id;
+    });
+    // 获取试卷列表
+    this.$http.get('/teacher/getPaperList', {}, {}).then(function(res) {
+      this.papers = res.data;
+    });
+  },
+  data: {
+    subjects: [],
+    papers: [],
+    modal: {
+      title: '',
+      form: {
+        _id: undefined,
+        name: undefined,
+        duration: undefined,
+        points: undefined,
+        subject: undefined
+      }
+    }
+  },
+  methods: {
+    resetForm: function() {
+      this.modal.form = {
+        _id: undefined,
+        name: undefined,
+        duration: undefined,
+        points: undefined,
+        subject: this.subjects[0]._id
+      };
+    },
+    formValid: function() {
+      var flag = false;
+      if (this.modal.form.name === undefined || this.modal.form.name === '') flag = true;
+      if (this.modal.form.duration === undefined || this.modal.form.duration === '') flag = true;
+      if (this.modal.form.points === undefined || this.modal.form.points === '') flag = true;
+      if (this.modal.form.subject === undefined || this.modal.form.subject === '') flag = true;
+      return flag;
+    },
+    create: function() {
+      this.resetForm();
+      this.modal.title = '创建新试卷';
+      $('#newPaperModal').modal();
+    },
+    edit: function(model) {
+      this.modal.form = {
+        _id: model._id.toString(),
+        name: model.name.toString(),
+        duration: model.duration + 0,
+        points: model.points + 0,
+        subject: model.subject._id.toString()
+      };
+      $('#newPaperModal').modal();
+    },
+    submit: function() {
+      var id = this.modal.form._id;
+      this.$http.post('/teacher/paperSubmit', { formPaper: this.modal.form }, {}).then(function(res) {
+        if (id) {
+          this.findOneAndUpdate(id, res.data);
+        } else {
+          this.papers.unshift(res.data);
+        }
+        $('#newPaperModal').modal('hide');
+      });
+    },
+    findOneAndUpdate: function(id, model) {
+      var newSubject;
+      this.subjects.forEach(function(v, k) {
+        if (v._id === model.subject) newSubject = v;
+      });
+      this.papers.forEach(function(v, k) {
+        if (v._id === id) {
+          v.name = model.name;
+          v.duration = model.duration;
+          v.points = model.points;
+          v.subject = newSubject;
+        }
+      });
+    }
+  }
+});
+
+new Vue({
+  el: '#composeCtrl',
+  ready: function() {
+    // 试卷信息
+    this.$http.get('/teacher/paper/getPaperInfo', { params: { id: this.id } }).then(function(res) {
+      this.paper = res.data;
+    });
+    // 题型列表
+    this.$http.get('/teacher/getTestTypeList', {}).then(function(res) {
+      this.types = res.data;
+    });
+  },
+  data: {
+    id: $('#composeCtrl').attr('data-id'),
+    paper: {},
+    types: [],
+    form: {
+      ctype: undefined,
+      value: undefined,
+      number: undefined
+    }
+  },
+  methods: {
+    updateTypes: function(action, model) {
+      if (action === 'remove') {
+        this.types.forEach(function(v, k) {
+          if (v._id === model._id) this.types.splice(k, 1);
+        });
+      } else if (action === 'add') {
+        this.types.push(model);
+      }
+    },
+    resetForm: function() {
+      this.form = {
+        value: undefined,
+        number: undefined
+      };
+    },
+    formValid: function() {
+      if (this.form.ctype === undefined || this.form.ctype === '') return true;
+      if (this.form.value === undefined || this.form.value === '') return true;
+      if (this.form.number === undefined || this.form.number === '') return true;
+      if ((this.form.value * this.form.number + this.nowPoints()) > this.paper.points) return true;
+      return false;
+    },
+    submit: function() {
+      var form = {
+        ctype: this.form.ctype._id,
+        value: this.form.value,
+        number: this.form.number,
+        datetime: Date.now()
+      };
+      this.$http.post('/teacher/paper/composeSave', { id: this.id, form: form }).then(function(res) {
+        form.ctype = this.form.ctype;
+        this.paper.composes.push(form);
+        this.resetForm();
+      });
+    },
+    delete: function(index, model) {
+      this.$http.post('/teacher/paper/deleteCompose', { pid: this.id, datetime: model.datetime }).then(function(res) {
+        this.paper.composes.splice(index, 1);
+        this.resetForm();
+      });
+    },
+    typeFilter: function() {
+      var types = this.types.concat();
+      if (this.paper.composes.length > 0) {
+        this.paper.composes.forEach(function(v, k) {
+          types.forEach(function(vv, kk) {
+            if (v.ctype._id === vv._id) types.splice(kk, 1);
+          });
+        });
+      }
+
+      this.form.ctype = types[0];
+      return types;
+    },
+    nowPoints: function() {
+      var points = 0;
+      this.paper.composes.forEach(function(v, k) {
+        points += v.value * v.number;
+      });
+      return points;
+    },
+    complete: function() {
+      this.$http.post('/teacher/paper/completeCompose', { id: this.id }).then(function(res) {
+        location.href = '/teacher/paper';
+      });
+    }
+  }
+});
+
 Vue.filter('inputType', function(type) {
   var inputType = 'radio';
   this.types.forEach(function(v, k) {
     if (v._id === type && v.name === '多选题') inputType = 'checkbox';
   });
   return inputType;
+});
+
+Vue.filter('paperStatus', function(status) {
+  var s = '';
+  switch (status) {
+    case 1:
+      s = '初始化完成';
+      break;
+    case 2:
+      s = '组卷完成';
+      break;
+    case 3:
+      s = '完成';
+      break;
+    case -1:
+      s = '已删除';
+      break;
+  }
+  return s;
 });

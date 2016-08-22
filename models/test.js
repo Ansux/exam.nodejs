@@ -21,6 +21,7 @@ var TestSchema = new mongoose.Schema({
   options: [], // {key:A, val: are you ok?}
   result: [],
   analyze: String,
+  isDeleted: Boolean,
   meta: {
     createAt: Date,
     updateAt: Date
@@ -30,6 +31,7 @@ var TestSchema = new mongoose.Schema({
 TestSchema.pre('save', function(next) {
   if (this.isNew) {
     this.meta.createAt = Date.now();
+    this.isDeleted = false;
   } else {
     this.meta.updateAt = Date.now();
   }

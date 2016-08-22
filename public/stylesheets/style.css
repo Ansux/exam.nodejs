@@ -18,3 +18,45 @@
 .testCtrl .t-item {
   margin-bottom: 20px;
 }
+
+
+/* 试卷管理 */
+
+.paperCtrl .t-header {
+  font-weight: bold;
+  border-bottom: solid 2px #ccc;
+  line-height: 30px;
+  margin-bottom: 12px;
+}
+
+.paperCtrl .t-item {
+  margin-bottom: 20px;
+  border-bottom: dashed 1px #ccc;
+  padding-bottom: 10px;
+}
+
+.paperCtrl .t-item:last-child {
+  border-bottom: none;
+}
+
+.paperCtrl .t-item .name {
+  font-size: 15px;
+}
+
+.paperCtrl .t-item .info span {
+  color: #666;
+  margin-right: 15px;
+  font-size: 13px;
+}
+
+.paperCtrl .control a {
+  display: block;
+  margin-bottom: 5px;
+}
+
+
+/* 组卷管理 */
+
+.composeCtrl .t-form {
+  margin-top: 20px;
+}

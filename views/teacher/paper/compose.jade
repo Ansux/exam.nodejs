@@ -1,0 +1,49 @@
+extends ../../layout/teacher
+
+block content
+  #composeCtrl.composeCtrl(data-id="#{id}")
+    .panel.panel-default
+      .panel-heading 试卷信息
+      .panel-body
+        p(v-text="paper.name")
+        p(v-text="paper.duration")
+        p(v-text="paper.points")
+        p(v-text="paper.status")
+    .panel.panel-default
+      .panel-heading 组卷信息
+      .panel-body
+        .t-header.clearfix
+          .col-sm-6 题型
+          .col-sm-2 分值
+          .col-sm-2 题量
+          .col-sm-2 操作
+        .t-body
+          .t-item.clearfix(v-for="item in paper.composes")
+            .col-sm-6(v-text="item.ctype.name")
+            .col-sm-2(v-text="item.value")
+            .col-sm-2(v-text="item.number")
+            .col-sm-2
+              button.btn.btn-danger.btn-xs(@click="delete($index,item)") 删除
+        .t-info-block
+          .alert.alert-danger(v-if="nowPoints()>paper.points")
+            | 超了 {{nowPoints() - paper.points}}
+          .alert.alert-warning(v-if="nowPoints()<paper.points")
+            | 没够呢。差 {{paper.points-nowPoints()}} 分
+          .alert.alert-success(v-if="nowPoints()===paper.points")
+            | 稳了。
+            button.btn.btn-primary(@click="complete()") 完成组卷
+    .panel.panel-default(v-if="nowPoints()<paper.points")
+      .panel-body.clearfix
+        .col-sm-6
+          select.form-control(v-model="form.ctype")
+            option(:value="item",v-for="item in typeFilter()",v-text="item.name")
+        .col-sm-2
+          input.form-control(type="number",v-model="form.value")
+        .col-sm-2
+          input.form-control(type="number",v-model="form.number")
+        .col-sm-2
+          buttom.btn.btn-primary.btn-sm(@click="submit()",:disabled="formValid()") 提交
+block scripts
+  script(src='/vue/dist/vue.min.js')
+  script(src='/vue-resource/dist/vue-resource.min.js')
+  script(src='/javascripts/v_teacher.js')

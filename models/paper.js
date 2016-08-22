@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var ObjectId = mongoose.Schema.Types.ObjectId;
 
-var PagerSchema = new mongoose.Schema({
+var PaperSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
@@ -14,10 +14,7 @@ var PagerSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  status: {
-    type: Number,
-    default: 1
-  },
+  status: Number,
   subject: {
     type: ObjectId,
     ref: 'Subject'
@@ -29,6 +26,7 @@ var PagerSchema = new mongoose.Schema({
     },
     value: Number,
     number: Number,
+    datetime: Date,
     tests: [{
       type: ObjectId,
       ref: 'Test'
@@ -38,7 +36,18 @@ var PagerSchema = new mongoose.Schema({
     type: ObjectId,
     ref: 'Teacher'
   },
-  editLogs: [],
+  lastEditor: {
+    type: ObjectId,
+    ref: 'Teacher'
+  },
+  editLogs: [{
+    editor: {
+      type: ObjectId,
+      ref: 'Teacher'
+    },
+    datetime: Date
+  }],
+  isDeleted: Boolean,
   meta: {
     createAt: Date,
     updateAt: Date
@@ -48,21 +57,32 @@ var PagerSchema = new mongoose.Schema({
 PaperSchema.pre('save', function(next) {
   if (this.isNew) {
     this.meta.createAt = Date.now();
+    this.isDeleted = false;
+    this.status = 1;
     this.editLogs = [{
       editor: this.creator,
       datetime: Date.now()
     }];
   } else {
     this.meta.updateAt = Date.now();
+    this.editLogs = this.editLogs.concat([{
+      editor: this.lastEditor,
+      datetime: Date.now()
+    }]);
   }
   next();
 });
 
-PaperSchema.static = {
+PaperSchema.statics = {
   list: function(cb) {
     return this
       .find({})
-      .sort('meta.createAt')
+      .populate('subject', {
+        'name': 1
+      })
+      .sort({
+        'meta.createAt': -1
+      })
       .exec(cb);
   },
   search: function(query, cb) {
@@ -76,8 +96,14 @@ PaperSchema.static = {
       .findOne({
         _id: id
       })
+      .populate('subject', {
+        'name': 1
+      })
+      .populate('composes.ctype', {
+        'name': 1
+      })
       .exec(cb);
   }
 };
 
-module.exports = mongoose.model('Paper', PagerSchema);
+module.exports = mongoose.model('Paper', PaperSchema);
