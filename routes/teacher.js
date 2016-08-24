@@ -72,7 +72,9 @@ router.get('/test', function(req, res) {
   });
 });
 router.get('/getTestList', function(req, res) {
-  Test.list(function(err, tests) {
+  var subject = req.query.subject;
+  var type = req.query.type;
+  Test.search({ subject: subject, type: type }, function(err, tests) {
     res.json(tests);
   });
 });
@@ -115,11 +117,30 @@ router.post('/testSubmit', function(req, res) {
     });
   });
 });
+router.get('/test/list', function(req, res) {
+  var subject = req.query.subject;
+  var type = req.query.type;
+  Test.find({
+    subject: subject,
+    type: type
+  }, function(err, tests) {
+    res.json(tests);
+  });
+});
 
 // 试卷管理
 router.get('/paper', function(req, res) {
   res.render('./teacher/paper/index', {
     title: '试卷管理'
+  });
+});
+router.get('/paper/:id', function(req, res) {
+  var id = req.params.id;
+  Paper.findById(id, function(err, paper) {
+    res.render('./teacher/paper/detail', {
+      title: '试卷详情',
+      paper: paper
+    });
   });
 });
 router.get('/getPaperList', function(req, res) {
@@ -213,8 +234,48 @@ router.post('/paper/completeCompose', function(req, res) {
 
 // 选题
 router.get('/paper/topic/:id', function(req, res) {
+  var id = req.params.id;
   res.render('./teacher/paper/topic', {
-    title: '选题'
+    title: '选题',
+    id: id
+  });
+});
+router.post('/paper/addTest', function(req, res) {
+  var pid = req.body.paper;
+  var compose = req.body.compose;
+  var test = req.body.test;
+
+  Paper.update({
+    _id: pid,
+    'composes._id': compose
+  }, {
+    $push: { 'composes.$.tests': test }
+  }, function(e, r) {
+    res.json(true);
+  });
+});
+router.post('/paper/delTest', function(req, res) {
+  var pid = req.body.paper;
+  var compose = req.body.compose;
+  var test = req.body.test;
+
+  Paper.update({
+    _id: pid,
+    'composes._id': compose
+  }, {
+    $pull: { 'composes.$.tests': test }
+  }, function(e, r) {
+    res.json(true);
+  });
+});
+router.post('/paper/completeTopic', function(req, res) {
+  var id = req.body.id;
+  Paper.update({ _id: id }, {
+    $set: {
+      status: 3
+    }
+  }, function(err, result) {
+    res.json(true);
   });
 });
 

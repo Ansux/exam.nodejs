@@ -1,25 +1,22 @@
 var vm = new Vue({
   el: '#testCtrl',
   ready: function() {
-    // 初始化现有题目数据
-    this.$http.get('/teacher/getTestList', {}, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest"
-      },
-      emulateJSON: true
-    }).then(function(res) {
-      this.tests = res.data;
-    });
+
     // 获取科目选项
-    this.$http.get('/teacher/getSubjectList', {}, {}).then(function(res) {
-      this.subjects = res.data;
-      if (res.data.length > 0) this.testAttrs.subject = res.data[0]._id;
+    this.$http.get('/teacher/getSubjectList', {}, {}).then(function(subjects) {
+      this.subjects = subjects.data;
+      if (subjects.data.length > 0) this.testAttrs.subject = subjects.data[0]._id;
+
+      // 获取题型选项
+      this.$http.get('/teacher/getTestTypeList', {}, {}).then(function(types) {
+        this.types = types.data;
+        if (types.data.length > 0) this.testAttrs.type = types.data[0]._id;
+
+        // 初始化现有题目数据
+        this.getTestList();
+      });
     });
-    // 获取题型选项
-    this.$http.get('/teacher/getTestTypeList', {}, {}).then(function(res) {
-      this.types = res.data;
-      if (res.data.length > 0) this.testAttrs.type = res.data[0]._id;
-    });
+
   },
   data: {
     tests: [],
@@ -64,6 +61,15 @@ var vm = new Vue({
     }
   },
   methods: {
+    getTestList: function() {
+      var query = {
+        subject: this.testAttrs.subject,
+        type: this.testAttrs.type
+      };
+      this.$http.get('/teacher/getTestList', { params: query }, {}).then(function(res) {
+        this.tests = res.data;
+      });
+    },
     findOneAndUpdate: function(id, model) {
       this.tests.forEach(function(v, k) {
         if (v._id === id) {
@@ -338,6 +344,117 @@ new Vue({
   }
 });
 
+
+Array.prototype.inArray = function(key, val) {
+  for (var i = 0; i < this.length; i++) {
+    if (this[i][key] === val) return true;
+  }
+  return false;
+};
+
+new Vue({
+  el: '#topicCtrl',
+  ready: function() {
+    var _this = this;
+    this.$http.get('/teacher/paper/getPaperInfo', { params: { id: this.id } }).then(function(res) {
+      var paper = res.data;
+      _this.compose = paper.composes[0];
+      paper.composes.forEach(function(v, k) {
+        Vue.set(v, 'isOpen', this.isOpen = true);
+      });
+      _this.paper = paper;
+      _this.getTestListByType();
+    });
+  },
+  data: {
+    id: $('#topicCtrl').attr('data-id'),
+    paper: undefined,
+    tests: [],
+    compose: {},
+    isEnough: undefined
+  },
+  methods: {
+    getTestListByType: function() {
+      var _this = this;
+      this.$http.get('/teacher/test/list', {
+        params: {
+          subject: this.paper.subject._id,
+          type: this.compose.ctype._id
+        }
+      }).then(function(res) {
+        var tests = res.data;
+        var composeTests = [];
+        var composeId = this.compose._id;
+
+        // 获取试卷中的 当前所选的题型 的题目列表。并计算试卷中该题型的题目是否达到要求
+        _this.paper.composes.forEach(function(v, k) {
+          if (v._id === composeId) {
+            composeTests = v.tests;
+            _this.isEnough = (composeTests.length === v.number);
+          }
+        });
+        // 遍历待选列表中每道题与试卷中现有题目进行对比，确定这道题是否已被添加
+        tests.forEach(function(test, index) {
+          test.isAdd = composeTests.inArray('_id', test._id);
+        });
+
+        _this.tests = tests;
+      });
+    },
+    add: function(test) {
+      console.log(test);
+      var _this = this;
+      var form = {
+        paper: this.id,
+        compose: this.compose._id,
+        test: test._id
+      };
+
+      this.$http.post('/teacher/paper/addTest', form).then(function(res) {
+        _this.paper.composes.forEach(function(v, k) {
+          if (v._id === form.compose) {
+            v.tests.push(test);
+            _this.isEnough = (v.number === v.tests.length);
+          }
+        });
+        test.isAdd = true;
+      });
+    },
+    del: function(index, test, compose) {
+      var _this = this;
+      var composeId = this.compose._id;
+      var form = {
+        paper: this.id,
+        compose: compose._id,
+        test: test._id
+      };
+      this.$http.post('/teacher/paper/delTest', form).then(function(res) {
+        compose.tests.splice(index, 1);
+        if (form.compose !== composeId) return;
+        _this.isEnough = false;
+        _this.tests.forEach(function(v, k) {
+          if (v._id === test._id) v.isAdd = false;
+        });
+      });
+    },
+    toggle: function(model) {
+      model.isOpen = !model.isOpen;
+    },
+    validTopicComplete: function() {
+      var flag = true;
+      this.paper.composes.forEach(function(v, k) {
+        if (v.tests.length !== v.number) flag = false;
+      });
+      return flag;
+    },
+    complete: function() {
+      this.$http.post('/teacher/paper/completeTopic', { id: this.id }).then(function(res) {
+        location.href = '/teacher/test';
+      });
+    }
+  }
+});
+
 Vue.filter('inputType', function(type) {
   var inputType = 'radio';
   this.types.forEach(function(v, k) {
@@ -363,4 +480,9 @@ Vue.filter('paperStatus', function(status) {
       break;
   }
   return s;
+});
+
+Vue.filter('convertNumber', function(val) {
+  var arr = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  return arr[val] || '';
 });

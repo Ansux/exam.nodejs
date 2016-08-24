@@ -1,0 +1,39 @@
+extends ../../layout/teacher
+
+block content
+  - var arr = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  .paperCtrl(data-id="#{id}")
+    .panel.panel-default
+      .panel-heading 试卷信息
+      .panel-body
+        div= paper.name
+        div
+          | 时长：
+          span= paper.duration
+          | 总分：
+          span= paper.points
+        div
+          | 科目：
+          span= paper.subject.name
+          | 状态：
+          span 已完成
+    .panel.panel-default
+      .panel-heading
+        | 试卷预览
+      .panel-body
+        each item, index in paper.composes
+          .compose-item
+            .compose-info
+              | #{arr[index]}、
+              | #{item.ctype.name}
+              | (#{item.value + 'x' + item.tests.length})
+            .compose-test(v-show="item.isOpen")
+              each test, index in item.tests
+                .test-item
+                  .title
+                    | #{index+1}. 
+                    span= test.title
+                  each o in test.options
+                    .options
+                      .option
+                        | #{o.key}. #{o.val}

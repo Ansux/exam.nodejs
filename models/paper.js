@@ -102,6 +102,10 @@ PaperSchema.statics = {
       .populate('composes.ctype', {
         'name': 1
       })
+      .populate('composes.tests', {
+        'title': 1,
+        'options': 1
+      })
       .exec(cb);
   }
 };

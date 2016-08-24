@@ -1,64 +1,64 @@
 extends ../../layout/teacher
 
 block content
-  #paperCtrl.paperCtrl
+  #topicCtrl.topicCtrl(data-id="#{id}")
     .panel.panel-default
-      .panel-heading.clearfix
-        .pull-left
-          | 共（{{papers.length}}）张卷子
-        .pull-right
-          button.btn.btn-default(@click="create()") 添加试卷
-    .modal.fade#newPaperModal(data-backdrop="false")
-      .modal-dialog
-        .modal-content
-          .modal-header
-            button.close(data-dismiss="modal",aria-label="Close")
-              span(aria-hidden="true") &times;
-            h4.modal-title(v-text="modal.title")
-          .modal-body
-            form.form-horizontal
-              .form-group
-                label.col-sm-2.label-control 名称
-                .col-sm-10
-                  input.form-control(v-model="modal.form.name")
-              .form-group
-                label.col-sm-2.label-control 时长
-                .col-sm-10
-                  input.form-control(type="number",v-model="modal.form.duration")
-              .form-group
-                label.col-sm-2.label-control 总分
-                .col-sm-10
-                  input.form-control(type="number",v-model="modal.form.points")
-              .form-group
-                label.col-sm-2.label-control 科目
-                .col-sm-10
-                  select.form-control(v-model="modal.form.subject")
-                    option(v-for="item in subjects",:value="item._id",v-text="item.name")
-          .modal-footer
-            button.btn.btn-default(data-dismiss="modal") 关闭
-            button.btn.btn-primary(type="submit",:disabled="formValid()",@click="submit()") 提交
-    .panel.panel-default
-      .panel-heading 试卷列表
+      .panel-heading 试卷信息
       .panel-body
-        .t-header.clearfix
-          .col-sm-8 试卷
-          .col-sm-2 状态
-          .col-sm-2 操作
-        .t-body
-          .t-item.clearfix(v-for="item in papers")
-            .col-sm-8
-              .name(v-text="item.name")
-              .info
-                .row-line
-                  span.subject 科目：{{item.subject.name}}
-                .row-line
-                  span.duration 时长：{{item.duration}}
-                  span.points 总分：{{item.points}}
-            .col-sm-2(v-text="item.status|paperStatus")
-            .col-sm-2.control
-              a(@click="edit(item)",v-if="item.status===1") 更新
-              a(href="/teacher/paper/compose/{{item._id}}",v-if="item.status===1") 组卷
-              a(href="/teacher/paper/topic/{{item._id}}",v-if="item.status===2") 去选题
+        div(v-text="paper.name")
+        div
+          | 时长：
+          span(v-text="paper.duration")
+          | 总分：
+          span(v-text="paper.points")
+        div
+          | 科目：
+          span(v-text="paper.subject.name")
+          | 状态：
+          span(v-text="paper.status|paperStatus")
+        div
+          | 组卷：
+          span(v-for="item in paper.composes") {{item.ctype.name}}({{item.value + 'x' + item.number}})
+    .row
+      .col-sm-6
+        .panel.panel-default
+          .panel-heading.clearfix
+            .pull-left 题库待选区
+            .pull-right
+              select.form-control(v-model="compose",@change="getTestListByType()")
+                option(v-for="item in paper.composes",:value="item",v-text="item.ctype.name")
+          .panel-body
+            .test-item(v-for="item in tests")
+              .title
+                | {{$index+1}}. 
+                span(v-text="item.title")
+                button.btn.btn-default.btn-xs.pull-right(@click="add(item)",:disabled="item.isAdd||isEnough") 选入试卷
+              .options
+                .option(v-for="o in item.options")
+                  | {{o.key}}.
+                  | {{o.val}}
+                .result(v-text="item.result")
+      .col-sm-6
+        .panel.panel-default
+          .panel-heading
+            | 试卷预览
+            button.btn.btn-default.btn-xs.pull-right(@click="complete()",v-show="validTopicComplete()") 完成选题
+          .panel-body
+            .compose-item(v-for="item in paper.composes")
+              .compose-info
+                | {{$index|convertNumber}}、
+                | {{item.ctype.name}}
+                | ({{item.value + 'x' + item.tests.length}})
+                button.btn.btn-default.btn-xs(@click="toggle(item)") {{item.isOpen?'收起':'展开'}}
+              .compose-test(v-show="item.isOpen")
+                .test-item(v-for="test in item.tests")
+                  .title
+                    | {{$index+1}}. 
+                    span(v-text="test.title")
+                    button.btn.btn-default.btn-xs(@click="del($index,test,item)") 移除
+                  .options(v-for="o in test.options")
+                    .option
+                      {{o.key}}. {{o.val}}
 block scripts
   script(src='/vue/dist/vue.min.js')
   script(src='/vue-resource/dist/vue-resource.min.js')

@@ -8,12 +8,12 @@ block content
           .input-group
             span.input-group-btn
               button.btn.btn-default 科目
-            select.form-control(v-model="testAttrs.subject")
+            select.form-control(v-model="testAttrs.subject",@change="getTestList()")
               option(v-for="item in subjects",v-bind:value="item._id",v-text="item.name")
           .input-group
             span.input-group-btn
               button.btn.btn-default 题型
-            select.form-control(v-model="testAttrs.type")
+            select.form-control(v-model="testAttrs.type",@change="getTestList()")
               option(v-for="item in types",v-bind:value="item._id",v-text="item.name")
         .pull-right
           button.btn.btn-default(@click="create()") 添加题目
@@ -51,7 +51,7 @@ block content
               button.btn.btn-default(data-dismiss="modal") 关闭
               button.btn.btn-primary(type="button",v-bind:disabled="formValid()",@click="submit()") 提交
     .panel.panel-default
-      .panel-heading 题目列表
+      .panel-heading 题目列表 ({{tests.length}})
       .panel-body
         .t-header.row
           .col-sm-10 题目
