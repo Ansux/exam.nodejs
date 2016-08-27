@@ -23,6 +23,7 @@ mongoose.connect(dbUrl);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.static('./bower_components'));
+app.use(express.static('./node_modules'));
 app.use(express.static('./public'));
 app.use(express.static('./assets'));
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));

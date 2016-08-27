@@ -11,6 +11,7 @@ var ExamSchema = new mongoose.Schema({
     ref: 'Paper'
   },
   status: {
+    // 1.初始化，2.锁定，-1.作废
     type: Number,
     default: 1
   },

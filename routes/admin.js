@@ -1,4 +1,5 @@
 var express = require('express');
+var _ = require('underscore');
 var router = express.Router();
 
 var TestType = require('../models/testType');
@@ -45,6 +46,11 @@ router.get('/subject', function(req, res) {
     });
   });
 });
+router.get('/subject/list', function(req, res) {
+  Subject.find({}, function(err, subjects) {
+    res.json(subjects);
+  });
+});
 router.get('/subject/create', function(req, res) {
   res.render('./admin/subject/create', {
     title: '添加科目'
@@ -64,18 +70,43 @@ router.post('/subject/create', function(req, res) {
 
 // 考试管理
 router.get('/exam', function(req, res) {
-  Exam.list(function(err, exams) {
-    res.render('./admin/exam/index', {
-      title: '考试记录',
-      exams: exams
-    });
+  res.render('./admin/exam/index', {
+    title: '考试记录'
   });
 });
-router.get('/exam/create', function(req, res) {
-  Subject.list(function(err, subjects) {
-    res.render('./admin/exam/create', {
-      title: '添加考试',
-      subjects: subjects
+router.get('/exam/list', function(req, res) {
+  Exam.find({}).populate(
+    'paper', { name: 1 }
+  ).exec(function(err, exams) {
+    res.json(exams);
+  });
+});
+router.post('/exam/save', function(req, res) {
+  var form = req.body.form;
+  var formObj = {
+    name: form.name,
+    paper: form.paper,
+    times: {
+      beginTime: form.beginTime,
+      endTime: form.endTime
+    }
+  };
+  var _exam;
+  var promise = new Promise(function(resolve, reject) {
+    if (form._id) {
+      Exam.findOne({ _id: form._id }, function(err, exam) {
+        _exam = _.extend(exam, formObj);
+        resolve(true);
+      });
+    } else {
+      _exam = new Exam(formObj);
+      resolve(true);
+    }
+  });
+
+  promise.then(function(v) {
+    _exam.save(function(err, exam) {
+      res.json(exam);
     });
   });
 });
@@ -85,37 +116,6 @@ router.get('/exam/getPaper', function(req, res) {
   Paper.search({ subject: subject }, function(err, papers) {
     res.json(papers);
   });
-});
-router.post('/exam/save', function(req, res) {
-  var id = req.body.id;
-  var form = req.body.exam;
-  if (id) {
-    Exam.update({ _id: id }, {
-      $set: {
-        name: form.name,
-        paper: form.paper,
-        meta: {
-          beginTime: form.beginTime,
-          endTime: form.endTime
-        }
-      }
-    }, function(err, result) {
-      res.json(true);
-    });
-  } else {
-    var _exam = new Exam({
-      name: form.name,
-      paper: form.paper,
-      status: 1,
-      meta: {
-        beginTime: form.beginTime,
-        endTime: form.endTime
-      }
-    });
-    _exam.save(function(err, exam) {
-      res.json(exam);
-    });
-  }
 });
 
 module.exports = router;

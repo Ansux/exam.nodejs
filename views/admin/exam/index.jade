@@ -1,16 +1,74 @@
 extends ../../layout/admin
 
 block content
-  table.table
-    thead
-      tr
-        th 题型
-        th 操作
-    tbody
-      each item in exams
-        tr
-          td= item.name
-          td
-            a(href="") 编辑
-            |  / 
-            a(href="") 删除
+  .exam-ctrl#exam_ctrl
+    .panel.panel-default
+      .panel-heading.clearfix
+        .pull-left 共（{{exams.length}}）条记录
+        .pull-right
+          button.btn.btn-default.btn-sm(@click="create()") 添加考试
+    .list
+      table.table
+        thead
+          tr
+            th 名称
+            th 状态
+            th 进度
+            th 操作
+        tbody
+          tr(v-for="item in exams")
+            td
+              .name(v-text="item.name")
+              .paper
+                | 科目：
+                span(v-text="item.paper.name")
+              .times
+                | 时间：
+                span {{item.times.beginTime|parseDate 'YYYY-MM-DD (HH:mm'}} - {{item.times.endTime|parseDate 'HH:mm)'}}
+            td(v-text="item.status|parseStatus")
+            td(v-text="item|parseProgress")
+            td
+              button.btn.btn-warning.btn-xs(@click="edit(item)") 编辑
+              button.btn.btn-danger.btn-xs(@click="remove(item)") 删除
+    .modal.fade#modal_exam_create(data-backdrop="false")
+      .modal-dialog
+        .modal-content
+          .modal-header
+            button.close(data-dismiss="modal",aria-label="colse")
+              span(aria-hidden="true") &times;
+            h4.modal-title(v-text="modal.title")
+          .modal-body
+            form.form-horizontal(method="post",action="/admin/exam/create")
+              input(type="hidden",v-model="modal.form.id",v-if="modal.form.id")
+              .form-group
+                label.control-label.col-sm-2 名称
+                .col-sm-10
+                  input.form-control(v-model="modal.form.name")
+              .form-group
+                label.control-label.col-sm-2 科目
+                .col-sm-10
+                  select.form-control(v-model="subject",@change="getPaper()")
+                    option(value="-1") 请选择
+                    option(v-for="item in subjects",:value="item._id",v-text="item.name")
+              .form-group
+                label.control-label.col-sm-2 试卷
+                .col-sm-10
+                  select.form-control(v-model="modal.form.paper")
+                    option(value="-1",v-if="papers.length===0") 请选择
+                    option(v-for="item in papers",:value="item._id",v-text="item.name")
+              .form-group
+                label.control-label.col-sm-2 开考时间
+                .col-sm-10
+                  input.form-control(v-model="modal.form.beginTime",type="datetime-local")
+              .form-group
+                label.control-label.col-sm-2 结束时间
+                .col-sm-10
+                  input.form-control(v-model="modal.form.endTime",type="datetime-local")
+          .modal-footer
+            button.btn.btn-default(data-dismiss="modal") 关闭
+            button.btn.btn-primary(type="submit",@click="submit()",:disabled="validForm()") 提交
+block scripts
+  script(src='/vue/dist/vue.min.js')
+  script(src='/vue-resource/dist/vue-resource.min.js')
+  script(src='/javascripts/v_admin.js')
+  script(src='/moment/moment.js')
