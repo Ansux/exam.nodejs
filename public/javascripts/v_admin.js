@@ -101,10 +101,19 @@ new Vue({
       return paper;
     },
     submit: function() {
-      this.$http.post('/admin/exam/save', { form: this.modal.form }).then(function(res) {
+      // 解决 datetime-local转datetime错误
+      var form = {
+        _id: this.modal.form._id,
+        name: this.modal.form.name,
+        paper: this.modal.form.paper,
+        beginTime: this.modal.form.beginTime.replace('T', ' '),
+        endTime: this.modal.form.endTime.replace('T', ' ')
+      };
+
+      this.$http.post('/admin/exam/save', { form: form }).then(function(res) {
         var exam = res.data;
         exam.paper = this.findPaperById(exam.paper);
-        if (this.modal.form._id) {
+        if (form._id) {
           this.update(exam);
         } else {
           this.exams.push(exam);

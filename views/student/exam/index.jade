@@ -1,0 +1,35 @@
+extends ../../layout/student
+
+block content
+  .panel.panel-default
+    .panel-heading 考试记录
+    .panel-body
+      table.table
+        thead
+          tr
+            th 考试
+            th 状态
+            th 进度
+            th 操作
+        tbody
+          each item in exams
+            tr
+              td
+                h4 #{item.name}
+                p 
+                  | 时间：#{moment(item.times.beginTime).format('YYYY-MM-DD (HH:mm - ')}
+                  | #{moment(item.times.endTime).format('HH:mm)')}
+              td #{item.status===-1?"已作废":item.status===1?"初始化":"锁定"}
+              td
+                - var beginTime=new Date(item.times.beginTime),endTime=new Date(item.times.endTime),now=new Date();
+                - if (beginTime>now)
+                  span 待考中
+                - else if (endTime>now)
+                  span 正在考试
+                - else
+                  span 考试结束
+              td
+                - if (beginTime<now&&endTime>now)
+                  a(href="/tesing/#{item._id}") 进入答题
+                - if (endTime<now)
+                  a(href="/exam/#{item._id}") 查看详情

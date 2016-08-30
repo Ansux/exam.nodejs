@@ -1,0 +1,157 @@
+/* 正在考试 */
+
+a {
+  cursor: pointer;
+}
+
+.s-testing {
+  font-family: '微软雅黑';
+}
+
+.exam-info {
+  background: #fff;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.exam-info .title {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.compose-tests .t-item {
+  margin-bottom: 30px;
+}
+
+.compose-tests .t-item .options {
+  margin: 5px 0;
+}
+
+.compose-tests .t-item .radio-inline,
+.compose-tests .t-item .checkbox-inline {
+  margin-right: 10px;
+}
+
+.compose-tests .title {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.compose-tests .title span {
+  display: inline-block;
+  font-weight: bold;
+  width: 25px;
+}
+
+.compose-tests .options {
+  padding-left: 25px;
+}
+
+.compose-tests .option {
+  margin-bottom: 5px;
+  padding: 3px 0;
+}
+
+.compose-tests .answer-bar {
+  margin-top: 15px;
+  padding-left: 25px;
+}
+
+.exam-paper .compose {
+  background: #fff;
+  padding: 0 10px 10px 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 5px #ddd;
+  margin-bottom: 20px;
+}
+
+.exam-paper .compose-info {
+  font-size: 16px;
+  margin: 0 -10px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-bottom: solid 1px #ccc;
+}
+
+.card-item .items a {
+  display: inline-block;
+  padding: 0 5px;
+  background: #eee;
+  margin: 0 5px 5px 0;
+  text-decoration: none;
+  color: #666;
+}
+
+.card-item .items a.done {
+  background: #999;
+  color: #fff;
+}
+
+.right-bar {
+  font-family: '微软雅黑';
+  font-size: 12px;
+}
+
+.right-bar.fixed-top {
+  position: fixed;
+  z-index: 99;
+  top: 80px;
+}
+
+.right-bar .exam-tools,
+.right-bar .exam-card {
+  background: #fff;
+  border-radius: 3px;
+  margin-bottom: 20px;
+}
+
+.right-bar .exam-tools .checkbox {
+  margin: 0;
+}
+
+.right-bar .head {
+  padding: 5px 10px;
+  border-bottom: solid 1px #eee;
+}
+
+.right-bar .body {
+  padding: 10px;
+}
+
+.right-bar .foot {
+  padding: 5px 10px;
+}
+
+.right-bar .btn-submit {
+  border: none;
+  width: 100%;
+  height: 28px;
+  background: #999;
+  color: #fff;
+}
+
+.card-item {
+  margin-bottom: 10px;
+}
+
+.card-item .title {
+  margin-bottom: 5px;
+  border-left: 1px solid #999;
+  line-height: 10px;
+  padding-left: 4px;
+}
+
+.card-item span {
+  display: inline-block;
+}
+
+.card-item span.type {
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.card-item .items {
+  padding-top: 3px;
+}

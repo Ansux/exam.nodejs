@@ -15,7 +15,7 @@ var StuExamSchema = new mongoose.Schema({
       type: ObjectId,
       ref: 'Test'
     },
-    answer: String
+    answer: []
   }],
   score: Number,
   times: {
