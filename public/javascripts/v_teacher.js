@@ -390,6 +390,8 @@ new Vue({
         _this.paper.composes.forEach(function(v, k) {
           if (v._id === composeId) {
             composeTests = v.tests;
+            console.debug('composeTests',composeTests.length);
+            console.debug('tests',v.number);
             _this.isEnough = (composeTests.length === v.number);
           }
         });

@@ -1,35 +1,30 @@
 extends ../../layout/student
 
 block content
-  .panel.panel-default
+  .panel.panel-default#exam_ctrl
     .panel-heading 考试记录
     .panel-body
       table.table
         thead
           tr
             th 考试
-            th 状态
             th 进度
             th 操作
         tbody
-          each item in exams
-            tr
-              td
-                h4 #{item.name}
-                p 
-                  | 时间：#{moment(item.times.beginTime).format('YYYY-MM-DD (HH:mm - ')}
-                  | #{moment(item.times.endTime).format('HH:mm)')}
-              td #{item.status===-1?"已作废":item.status===1?"初始化":"锁定"}
-              td
-                - var beginTime=new Date(item.times.beginTime),endTime=new Date(item.times.endTime),now=new Date();
-                - if (beginTime>now)
-                  span 待考中
-                - else if (endTime>now)
-                  span 正在考试
-                - else
-                  span 考试结束
-              td
-                - if (beginTime<now&&endTime>now)
-                  a(href="/tesing/#{item._id}") 进入答题
-                - if (endTime<now)
-                  a(href="/exam/#{item._id}") 查看详情
+          tr(v-for='item in exams')
+            td
+              h5(v-text='item.name')
+              p
+                | 时间：
+                span(v-text="item.timeString")
+            td(v-text="item.timeStatus")
+            td
+              a(href="/tesing/{{item._id}}",v-if="item.timeStatus==='正在考试'&&!item.isBegin") 进入答题
+              a(href="/tesing/{{item._id}}",v-if="item.timeStatus==='正在考试'&&!item.isSubmit") 继续答题
+              a(href="/stuExam/score/{{item._id}}",v-if="item.isSubmit&&item.status!==3") 查看成绩
+              a(href="/stuExam/detail/{{item._id}}",v-if="item.isSubmit&&item.status===3") 查看详情
+block scripts
+  script(src='/vue/dist/vue.min.js')
+  script(src='/vue-resource/dist/vue-resource.min.js')
+  script(src='/javascripts/v_student.js')
+  script(src='/moment/moment.js')

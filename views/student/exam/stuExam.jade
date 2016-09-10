@@ -1,0 +1,37 @@
+extends ../../layout/student
+
+block content
+  .stuExam-ctrl#stuExam_ctrl(data-id="#{id}")
+    .exam-info
+      h1.title(v-text="exam.name")
+      .info
+        .time(v-text='timeString')
+        .se-info
+          span 姓名：{{stuExam.student.email}}
+          span 成绩：{{stuExam.score}}分
+    .exam-paper
+      .compose(v-for="compose in paper.composes")
+        .compose-info
+          | {{$index|parseZHNum}}、{{compose.ctype.name}}。(每题{{compose.value}}分)
+        .compose-tests
+          .t-item(v-for="test in compose.tests")
+            .title(id="t_{{test._id}}")
+              span(v-text="$index+1")
+              | {{test.title}} ({{test.result}})
+              span.glyphicon(v-bind:class="[test.answer.join('')===test.result.join('')?'glyphicon-ok':'glyphicon-remove']")
+            .options
+              .option(v-for="option in test.options") {{option.key}}. {{option.val}}
+            .answer-bar
+              div(v-for="option in test.options",class="radio-inline",v-if="compose.ctype.name==='单选题'||compose.ctype.name==='判断题'")
+                label
+                  input(type="radio",v-model="test.answer",:value="option.key",disabled)
+                  | {{option.key}}
+              div(v-for="option in test.options",class="checkbox-inline",v-if="compose.ctype.name==='多选题'")
+                label
+                  input(type="checkbox",v-model="test.answer",:value="option.key",disabled)
+                  | {{option.key}}
+block scripts
+  script(src='/vue/dist/vue.min.js')
+  script(src='/vue-resource/dist/vue-resource.min.js')
+  script(src='/javascripts/v_student.js')
+  script(src='/moment/moment.js')

@@ -1,33 +1,85 @@
 Array.prototype.getIndexByKey = function(key, val) {
   for (var i = 0; i < this.length; i++) {
-    if (this[i][key] === val) return this[i];
+    if (this[i][key] === val) return i;
   }
   return -1;
 };
 
 new Vue({
+  el: '#exam_ctrl',
+  ready: function() {
+    this.$http.get('/examJson', {}).then(function(res) {
+      var exams = res.data.exams;
+      var stuExams = res.data.stuExams;
+      var now = new Date();
+      exams.forEach(function(exam, k) {
+        stuExams.forEach(function(stuExam, k) {
+          if (exam._id == stuExam.exam) {
+            exam.isBegin = true;
+            if (stuExam.score) exam.isSubmit = true;
+          }
+        });
+
+        // 时间状态
+        var beginTime = new Date(exam.times.beginTime),
+          endTime = new Date(exam.times.endTime);
+        if (beginTime > now) {
+          exam.timeStatus = '待考中';
+        } else if (endTime > now) {
+          exam.timeStatus = '正在考试';
+        } else {
+          exam.timeStatus = '考试结束';
+        }
+
+        // 考试时间字符串
+        exam.timeString = moment(exam.times.beginTime).format('YYYY-MM-DD (HH:mm - ') + moment(exam.times.endTime).format('HH:mm)');
+      });
+      this.exams = exams;
+    });
+  },
+  data: {
+    exams: null
+  },
+  methods: {}
+});
+
+new Vue({
   el: '#testing_ctrl',
   ready: function() {
-    this.$http.get('/exam/detailJson', { params: { id: this.id } }).then(function(res) {
+    this.$http.get('/exam/detailJson', {
+      params: {
+        id: this.id
+      }
+    }).then(function(res) {
       this.exam = res.data.exam;
       var paper = res.data.paper;
       this.clock();
 
+      var _this = this;
+
       this.stuExam = JSON.parse(localStorage.getItem('stuExam'));
       if (this.stuExam === null) {
-        var stuExamJson = { exam: this.id, tests: [] };
+        var stuExamJson = {
+          exam: this.id,
+          tests: []
+        };
         localStorage.setItem('stuExam', JSON.stringify(stuExamJson));
         this.stuExam = stuExamJson;
-      } else {
-        if (this.stuExam.tests.length > 0) {
-          this.stuExam.tests.forEach(function(test, k) {
-            paper.composes.forEach(function(compose, k) {
-              compose.tests.forEach(function(t, k) {
-                if (t._id === test._id) t.answer = test.answer;
-              });
-            });
+
+        paper.composes.forEach(function(compose, k) {
+          compose.tests.forEach(function(t, k) {
+            t.answer = [];
           });
-        }
+        });
+      } else {
+        paper.composes.forEach(function(compose, k) {
+          compose.tests.forEach(function(t, k) {
+            _this.stuExam.tests.forEach(function(test, k) {
+              if (t._id === test._id) t.answer = test.answer;
+            });
+            if (!t.answer) t.answer = [];
+          });
+        });
       }
       this.paper = paper;
     });
@@ -63,17 +115,22 @@ new Vue({
     examTimes: function(times) {
       return moment(times.beginTime).format('YYYY-MM-DD (HH:mm-') + moment(times.endTime).format('HH:mm)');
     },
-    testAnswer: function(tid, answer) {
+    testAnswer: function(test) {
+      var answer = $.isArray(test.answer) ? test.answer : [test.answer];
+      answer = answer.length > 1 ? answer.sort() : answer;
       var stuExam = this.stuExam;
       if (stuExam.tests.length === 0) {
         stuExam.tests.push({
-          _id: tid,
+          _id: test._id,
           answer: answer
         });
       } else {
-        var index = stuExam.tests.getIndexByKey('_id', tid);
+        var index = stuExam.tests.getIndexByKey('_id', test._id);
         if (index === -1) {
-          stuExam.tests.push({ _id: tid, answer: answer });
+          stuExam.tests.push({
+            _id: test._id,
+            answer: answer
+          });
         } else {
           stuExam.tests[index].answer = answer;
         }
@@ -94,11 +151,15 @@ new Vue({
         var mm = parseInt(offset / (1000 * 60) % 60, 10);
         var ss = parseInt(offset / 1000 % 60, 10);
         _this.clockTime = (add0(hh) + ':' + add0(mm) + ':' + add0(ss)) || '00:00:00';
+
+        // 考试结束时间到，自动提交试卷
+        if (offset <= 0) _this.submit();
       }, 500);
     },
     locate: function(id) {
-      console.log(id);
-      $('html,body').animate({ scrollTop: $('#t_' + id).offset().top - 20 }, 1000);
+      $('html,body').animate({
+        scrollTop: $('#t_' + id).offset().top - 20
+      }, 1000);
     },
     submit: function() {
       var txt = '';
@@ -107,9 +168,55 @@ new Vue({
       }
       txt += '确定提交试卷么？';
       if (confirm(txt)) {
-        console.log(this.stuExam);
+        this.$http.post('/testing/submit', {
+          stuExam: this.stuExam
+        }).then(function(res) {
+          location.href = '/stuExam/score/' + this.id;
+        });
       }
     }
+  }
+});
+
+new Vue({
+  el: '#stuExam_ctrl',
+  ready: function() {
+    this.$http.get('/stuExam/detailJson', {
+      params: {
+        exam: this.id
+      }
+    }).then(function(res) {
+      this.exam = res.data.exam;
+      var paper = res.data.paper;
+      var stuExam = this.stuExam = res.data.stuExam;
+
+      paper.composes.forEach(function(compose, k) {
+        compose.tests.forEach(function(t, k) {
+          stuExam.examRecord.forEach(function(test, k) {
+            if (t._id === test._id) t.answer = test.answer;
+          });
+          if (!t.answer) t.answer = [];
+        });
+      });
+
+      this.paper = paper;
+    });
+  },
+  data: {
+    id: $('#stuExam_ctrl').attr('data-id'),
+    exam: null,
+    paper: null,
+    stuExam: null,
+  },
+  computed: {
+    timeString: function () {
+      if (this.exam) {
+        return moment(this.exam.times.beginTime).format('YYYY-MM-DD (HH:mm - ') + moment(this.exam.times.endTime).format('HH:mm)');
+      }
+    }
+  },
+  methods: {
+
   }
 });
 

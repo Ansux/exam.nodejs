@@ -10,13 +10,7 @@ var StuExamSchema = new mongoose.Schema({
     type: ObjectId,
     ref: 'Exam'
   },
-  examRecord: [{
-    test: {
-      type: ObjectId,
-      ref: 'Test'
-    },
-    answer: []
-  }],
+  examRecord: [],
   score: Number,
   times: {
     beginTime: {

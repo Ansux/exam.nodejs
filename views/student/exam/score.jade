@@ -1,0 +1,14 @@
+extends ../../layout/student
+
+block content
+  .panel.panel-default
+    .panel-heading 考试成绩
+    .panel-body
+      h4.title= stuExam.exam.name
+      .info
+        .time 答题时间：#{moment(stuExam.times.beginTime).format('YYYY-MM-DD (HH:mm - ') + moment(stuExam.times.endTime).format('HH:mm)')}
+        .se-info
+          span 姓名：#{stuExam.student.email}
+          span(style="margin-left:20px;") 成绩：#{stuExam.score}分
+block scripts
+  script(src='/moment/moment.js')

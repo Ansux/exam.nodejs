@@ -59,7 +59,7 @@ block content
               a(@click="edit(item)",v-if="item.status===1") 更新
               a(href="/teacher/paper/compose/{{item._id}}",v-if="item.status===1") 组卷
               a(href="/teacher/paper/topic/{{item._id}}",v-if="item.status===2") 去选题
-              a(href="/teacher/paper/{{item._id}}",v-if="item.status===3") 查看
+              a(href="/teacher/paper/detail/{{item._id}}",v-if="item.status===3") 查看
 block scripts
   script(src='/vue/dist/vue.min.js')
   script(src='/vue-resource/dist/vue-resource.min.js')

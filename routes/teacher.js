@@ -134,7 +134,7 @@ router.get('/paper', function(req, res) {
     title: '试卷管理'
   });
 });
-router.get('/paper/:id', function(req, res) {
+router.get('/paper/detail/:id', function(req, res) {
   var id = req.params.id;
   Paper.findById(id, function(err, paper) {
     res.render('./teacher/paper/detail', {

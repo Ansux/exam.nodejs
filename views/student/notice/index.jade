@@ -1,0 +1,19 @@
+extends ../../layout/student
+
+block content
+  .panel.panel-default
+    .panel-heading 考试公告
+    .panel-body
+      table.table
+        thead
+          tr
+            th 标题
+            th 时间
+        tbody
+          each item in notices
+            tr
+              td
+                a()= item.title
+              td= moment(item.meta.createAt).format('YYYY-MM-DD')
+block scripts
+  script(src='/moment/moment.js')
