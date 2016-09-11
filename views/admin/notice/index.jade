@@ -1,0 +1,53 @@
+extends ../../layout/admin
+
+block content
+  .notice-ctrl#notice_ctrl
+    .panel.panel-default
+      .panel-heading.clearfix
+        .pull-left 共（{{notices.length}}）条记录
+        .pull-right
+          button.btn.btn-default.btn-sm(@click="create()") 发布公告
+    .list
+      table.table
+        thead
+          tr
+            th 标题
+            th 时间
+            th 操作
+        tbody
+          tr(v-for="item in notices")
+            td(v-text="item.title")
+            td {{item.meta.createAt|parseDate 'YYYY-MM-DD HH:mm'}}
+            td
+              button.btn.btn-warning.btn-xs(@click="edit(item)") 编辑
+              button.btn.btn-danger.btn-xs(@click="remove(item._id,$index)") 删除
+    .modal.fade#modal_notice(data-backdrop="false")
+      .modal-dialog.modal-lg
+        .modal-content
+          .modal-header
+            button.close(data-dismiss="modal",aria-label="colse")
+              span(aria-hidden="true") &times;
+            h4.modal-title(v-text="modal.title")
+          .modal-body
+            form.form-horizontal(method="post",action="/admin/notice/save")
+              input(type="hidden",v-model="modal.form._id",v-if="modal.form._id")
+              .form-group
+                label.control-label.col-sm-2 标题
+                .col-sm-10
+                  input.form-control(v-model="modal.form.title")
+              .form-group
+                label.control-label.col-sm-2
+                  | 内容
+                .col-sm-10
+                  #editor
+                    textarea(v-model="modal.form.content",debounce="300",placehoder="Markdown")
+                    .marked(v-html="modal.form.content|marked")
+          .modal-footer
+            button.btn.btn-default(data-dismiss="modal") 关闭
+            button.btn.btn-primary(type="submit",@click="submit()",:disabled="validForm()") 提交
+block scripts
+  script(src='/marked/marked.min.js')
+  script(src='/vue/dist/vue.min.js')
+  script(src='/vue-resource/dist/vue-resource.min.js')
+  script(src='/javascripts/v_admin.js')
+  script(src='/moment/moment.js')

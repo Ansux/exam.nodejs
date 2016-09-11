@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var bcrypt = require('bcrypt-nodejs');
 
 var AdminSchema = new mongoose.Schema({
   email: {
@@ -19,11 +20,20 @@ var AdminSchema = new mongoose.Schema({
 AdminSchema.pre('save', function(next) {
   if (this.isNew) {
     this.meta.createAt = Date.now();
+    this.pwd = bcrypt.hashSync(this.pwd);
   } else {
     this.meta.updateAt = Date.now();
   }
   next();
 });
+
+AdminSchema.methods = {
+  validPwd: function(pwd, cb) {
+    bcrypt.compare(pwd, this.pwd, function(err, res) {
+      cb(res);
+    });
+  }
+};
 
 AdminSchema.statics = {
   list: function(cb) {

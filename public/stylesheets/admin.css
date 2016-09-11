@@ -1,0 +1,25 @@
+.notice-ctrl #editor{
+  min-height: 500px;
+  background-color: #f6f6f6;
+}
+.notice-ctrl textarea, .notice-ctrl .marked {
+  display: inline-block;
+  width: 49%;
+  height: 500px;
+  vertical-align: top;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 10px;
+  background-color: #f6f6f6;
+  overflow-y: auto;
+}
+
+.notice-ctrl textarea {
+  border: none;
+  border-right: 1px solid #ccc;
+  resize: none;
+  outline: none;
+  font-size: 14px;
+  font-family: 'Monaco', courier, monospace;
+}

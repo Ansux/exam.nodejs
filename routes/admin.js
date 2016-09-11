@@ -2,13 +2,71 @@ var express = require('express');
 var _ = require('underscore');
 var router = express.Router();
 
+var Admin = require('../models/admin');
 var TestType = require('../models/testType');
 var Subject = require('../models/subject');
 var Exam = require('../models/exam');
 var Paper = require('../models/paper');
+var Notice = require('../models/notice');
+
+router.get('*',function (req,res,next) {
+  var admin = req.session.admin || null;
+  res.locals.admin = admin;
+  var url = req.url;
+  if (['/account/signin', '/account/signup'].indexOf(url) !== -1) {
+    next();
+  } else {
+    if (!admin) return res.redirect('/admin/account/signin');
+    next();
+  }
+});
 
 router.get('/', function(req, res) {
   res.redirect('/admin/testType');
+});
+
+// 管理员登录
+router.get('/account/signin',function (req,res) {
+  res.render('./admin/account/signin',{
+    title: '管理员登录'
+  });
+});
+router.post('/account/signin',function (req,res) {
+  var email = req.body.email,
+    pwd = req.body.pwd;
+  Admin.findOne({email:email},function (err,admin) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    admin.validPwd(pwd,function (result) {
+      if (!result) return res.redirect('/admin/account/signin');
+      req.session.admin = admin;
+      res.redirect('/admin');
+    });
+  });
+});
+
+// 管理员注册
+router.get('/account/signup',function (req,res) {
+  res.render('./admin/account/signup',{
+    title: '管理员注册'
+  });
+});
+router.post('/account/signup',function (req,res) {
+  var email = req.body.email,
+    pwd = req.body.pwd;
+  var _admin = new Admin({email:email,pwd:pwd});
+  _admin.save(function (err,admin) {
+    req.session.admin = admin;
+    res.redirect('/admin');
+  });
+});
+
+// 账户登出
+router.get('/account/signout',function (req,res) {
+  delete req.session.admin;
+  res.redirect('/admin');
 });
 
 // 题型管理
@@ -110,11 +168,60 @@ router.post('/exam/save', function(req, res) {
     });
   });
 });
+router.post('/exam/status',function (req,res) {
+  var id = req.body._id,
+    status = req.body.status;
+  Exam.update({_id: id}, {$set: {
+    status: status
+  }},function (err) {
+    res.json(true);
+  });
+});
 router.get('/exam/getPaper', function(req, res) {
   var subject = req.query.subject;
   console.log(subject);
   Paper.search({ subject: subject }, function(err, papers) {
     res.json(papers);
+  });
+});
+
+// 公告管理
+router.get('/notice',function (req,res) {
+  res.render('./admin/notice/index',{
+    title: '考试公告'
+  });
+});
+router.get('/notice/list',function (req,res) {
+  Notice.find({}).exec(function (err,notices) {
+    res.json(notices);
+  });
+});
+router.post('/notice/save',function (req,res) {
+  var form = req.body.form;
+  var admin = req.session.admin._id;
+  var _notice;
+
+  if (form._id) {
+    Notice.update({_id: form._id},{
+      $set: {
+        title: form.title,
+        content: form.content
+      }
+    },function (err) {
+      res.json(true);
+    });
+  } else {
+    form.author = admin;
+    _notice = new Notice(form);
+    _notice.save(function (err,notice) {
+      res.json(notice);
+    });
+  }
+});
+router.post('/notice/remove',function (req,res) {
+  var id = req.body._id;
+  Notice.remove({_id: id},function (err) {
+    res.json(true);
   });
 });
 

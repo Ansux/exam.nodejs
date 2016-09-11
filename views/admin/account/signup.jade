@@ -1,0 +1,21 @@
+extends ../../layout/admin
+
+block content
+  .panel.panel-default
+    .panel-heading 管理员注册
+    .panel-body
+      form.form-horizontal(method="post",action="/admin/account/signup")
+        .form-group
+          label.control-label.col-sm-2 账号
+          .col-sm-10
+            input.form-control(name="email")
+        .form-group
+          label.control-label.col-sm-2 密码
+          .col-sm-10
+            input.form-control(type="password",name="pwd")
+        .form-group
+          .col-sm-offset-2.col-sm-10
+            button.btn.btn-primary(type="submit") 提交注册
+            .pull-right
+              | 已有账号，
+              a(href="/admin/account/signin") 去登录

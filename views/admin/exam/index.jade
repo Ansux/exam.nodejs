@@ -28,8 +28,9 @@ block content
             td(v-text="item.status|parseStatus")
             td(v-text="item|parseProgress")
             td
-              button.btn.btn-warning.btn-xs(@click="edit(item)") 编辑
-              button.btn.btn-danger.btn-xs(@click="remove(item)") 删除
+              button.btn.btn-primary.btn-xs(@click="status(item,$index)",v-text="item.status|statusBtnText",v-if="item.status!==3")
+              button.btn.btn-warning.btn-xs(@click="edit(item)",v-if="item.status===1") 编辑
+              button.btn.btn-danger.btn-xs(@click="remove(item)",v-if="item.status===1") 删除
     .modal.fade#modal_exam_create(data-backdrop="false")
       .modal-dialog
         .modal-content
@@ -68,6 +69,7 @@ block content
             button.btn.btn-default(data-dismiss="modal") 关闭
             button.btn.btn-primary(type="submit",@click="submit()",:disabled="validForm()") 提交
 block scripts
+  script(src='/marked/marked.min.js')
   script(src='/vue/dist/vue.min.js')
   script(src='/vue-resource/dist/vue-resource.min.js')
   script(src='/javascripts/v_admin.js')

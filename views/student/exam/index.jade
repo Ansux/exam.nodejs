@@ -1,30 +1,23 @@
 extends ../../layout/student
 
 block content
-  .panel.panel-default#exam_ctrl
+  .panel.panel-default
     .panel-heading 考试记录
     .panel-body
       table.table
         thead
           tr
             th 考试
-            th 进度
             th 操作
         tbody
-          tr(v-for='item in exams')
-            td
-              h5(v-text='item.name')
-              p
-                | 时间：
-                span(v-text="item.timeString")
-            td(v-text="item.timeStatus")
-            td
-              a(href="/tesing/{{item._id}}",v-if="item.timeStatus==='正在考试'&&!item.isBegin") 进入答题
-              a(href="/tesing/{{item._id}}",v-if="item.timeStatus==='正在考试'&&!item.isSubmit") 继续答题
-              a(href="/stuExam/score/{{item._id}}",v-if="item.isSubmit&&item.status!==3") 查看成绩
-              a(href="/stuExam/detail/{{item._id}}",v-if="item.isSubmit&&item.status===3") 查看详情
+          each item in exams
+            tr
+              td
+                h5= item.name
+                p
+                  | 时间：
+                  span= moment(item.times.beginTime).format('YYYY-MM-DD (HH:mm - ') + moment(item.times.endTime).format('HH:mm)')
+              td
+                a(href="/stuExam/detail/#{item._id}") 查看详情
 block scripts
-  script(src='/vue/dist/vue.min.js')
-  script(src='/vue-resource/dist/vue-resource.min.js')
-  script(src='/javascripts/v_student.js')
   script(src='/moment/moment.js')

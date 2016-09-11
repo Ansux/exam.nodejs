@@ -4,7 +4,7 @@ html
     meta(name='viewport',content='width=device-width,initial-scale=1')
     title= title
     link(rel='stylesheet',href='/bootstrap/dist/css/bootstrap.min.css')
-    link(rel='stylesheet',href='/css/student.css')
+    link(rel='stylesheet',href='/stylesheets/admin.css')
   body
     nav.navbar.navbar-default
       .container
@@ -25,6 +25,8 @@ html
               a(href="/admin/subject") 科目
             li
               a(href="/admin/exam") 考试
+            li
+              a(href="/admin/notice") 公告
           ul.nav.navbar-nav.navbar-right
             - if(!admin) {
               li

@@ -9,9 +9,16 @@ var Teacher = require('../models/teacher');
 var Paper = require('../models/paper');
 
 /* GET users listing. */
-router.get('*', function(req, res, next) {
-  res.locals.teacher = req.session.teacher || null;
-  next();
+router.get('*',function (req,res,next) {
+  var teacher = req.session.teacher || null;
+  res.locals.teacher = teacher;
+  var url = req.url;
+  if (['/account/signin', '/account/signup'].indexOf(url) !== -1) {
+    next();
+  } else {
+    if (!teacher) return res.redirect('/teacher/account/signin');
+    next();
+  }
 });
 
 // 登录

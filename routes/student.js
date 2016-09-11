@@ -8,22 +8,37 @@ var StuExam = require('../models/stuExam');
 var Notice = require('../models/notice');
 
 // 登录过滤器
+/**
 router.get("*", function(req, res, next) {
   var student = req.session.student || null;
   res.locals.student = student;
   var url = req.url;
-  console.log(url);
-  if (['/account/signin', '/account/signup'].indexOf(url) > -1) {
+
+  if (['/account/signin', '/account/signup'].indexOf(url) !== -1) {
     next();
   } else {
     if (!student) return res.redirect('/account/signin');
     next();
   }
 });
+**/
+
+// 登录权限验证
+function signinFilter(req, res) {
+  var student = req.session.student || null;
+  res.locals.student = student;
+  if (!student) return res.redirect('/account/signin');
+}
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.redirect('/exam');
+  signinFilter(req, res);
+  Notice.find({}).exec(function(err, notices) {
+    res.render('./student/dashboard', {
+      title: '首页',
+      notices: notices
+    });
+  });
 });
 
 // 学生登录
@@ -76,14 +91,34 @@ router.get('/account/signout', function(req, res) {
 
 // 考试中心
 router.get('/exam', function(req, res) {
-  res.render('./student/exam/index', {
-    title: '考试中心'
+  signinFilter(req, res);
+
+  var student = req.session.student._id;
+  Exam.find({
+    'times.endTime': {
+      '$lte': new Date()
+    }
+  }, function(err, exams) {
+    StuExam.find({
+      student: student
+    }, function(err, stuExams) {
+      res.render('./student/exam/index',{
+        title: '考试记录',
+        exams: exams,
+        stuExams: stuExams
+      });
+    });
   });
 });
+
 router.get('/examJson', function(req, res) {
   var student = req.session.student._id;
 
-  Exam.find({}, function(err, exams) {
+  Exam.find({
+    'times.endTime': {
+      '$gte': new Date()
+    }
+  }, function(err, exams) {
     StuExam.find({
       student: student
     }, function(err, stuExams) {
@@ -147,6 +182,7 @@ router.get('/exam/detailJson', function(req, res) {
 
 // 正在考试
 router.get('/tesing/:id', function(req, res) {
+  signinFilter(req, res);
   res.render('./student/exam/tesing', {
     title: '正在考试',
     id: req.params.id
@@ -202,6 +238,7 @@ router.post('/testing/submit', function(req, res) {
 
 // 考试成绩
 router.get('/stuExam/score/:exam', function(req, res) {
+  signinFilter(req, res);
   var exam = req.params.exam;
   var student = req.session.student._id;
   StuExam.findOne({
@@ -221,6 +258,7 @@ router.get('/stuExam/score/:exam', function(req, res) {
 
 // 考试详情
 router.get('/stuExam/detail/:id', function(req, res) {
+  signinFilter(req, res);
   res.render('./student/exam/stuExam', {
     title: '考试详情',
     id: req.params.id
