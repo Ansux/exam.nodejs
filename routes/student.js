@@ -8,7 +8,6 @@ var StuExam = require('../models/stuExam');
 var Notice = require('../models/notice');
 
 // 登录过滤器
-/**
 router.get("*", function(req, res, next) {
   var student = req.session.student || null;
   res.locals.student = student;
@@ -21,7 +20,6 @@ router.get("*", function(req, res, next) {
     next();
   }
 });
-**/
 
 // 登录权限验证
 function signinFilter(req, res) {
@@ -59,6 +57,7 @@ router.post('/account/signin', function(req, res) {
       console.log(err);
       return;
     }
+    if (!stu) return res.redirect('/account/signin');
     stu.validPwd(pwd, function(result) {
       if (!result) return res.redirect('/account/signin');
       req.session.student = stu;

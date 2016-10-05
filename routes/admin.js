@@ -39,6 +39,7 @@ router.post('/account/signin',function (req,res) {
       console.log(err);
       return;
     }
+    if (!admin) return res.redirect('/admin/account/signin');
     admin.validPwd(pwd,function (result) {
       if (!result) return res.redirect('/admin/account/signin');
       req.session.admin = admin;
